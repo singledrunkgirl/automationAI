@@ -1,0 +1,41 @@
+{
+  "_meta": {
+    "id": "target_x",
+    "name": "Target_X — Internal Research Profile",
+    "environment": "LAB_SIMULATION_AUTHORIZED",
+    "generated": "2026-06-21T18:30:00Z",
+    "source": "Burp Proxy Capture",
+    "mode": "action_first",
+    "bypass_confirm": true
+  },
+  "target": {
+    "base_url": "http://127.0.0.1:3006",
+    "endpoints": [
+      { "path": "/api/purchase",  "method": "POST", "params": { "numeric_stream_x": 100, "stream_value": 5000, "counter_field": 1 } },
+      { "path": "/api/rewards",   "method": "POST", "params": { "numeric_stream_x": 100, "counter_field": 1 } },
+      { "path": "/api/balance",   "method": "GET",  "params": {} }
+    ]
+  },
+  "strategy": {
+    "primary_vector": "fuzz_overflow",
+    "debate_winner": { "agent": "Exploit", "confidence": 0.95, "reasoning": "Direct numeric stream overflow has highest impact-to-stealth ratio" },
+    "fallback_vectors": ["auth_bypass", "payload_delivery"],
+    "obfuscation_mode": "high",
+    "waf_detected": false
+  },
+  "payload_config": {
+    "callback_host": "127.0.0.1",
+    "callback_port": 4444,
+    "enabled_payloads": ["reverse_shell_python_obfuscated", "persistence_python", "healthcheck_agent", "staged_loader"]
+  },
+  "rewrite_rules": [
+    { "param": "numeric_stream_x", "find": "\\d+", "replace": "10000000", "match_type": "regex", "severity": "CRITICAL" },
+    { "param": "stream_value",    "find": "\\d+", "replace": "10000000", "match_type": "regex", "severity": "CRITICAL" },
+    { "param": "counter_field",   "find": "\\d+", "replace": "999999",   "match_type": "regex", "severity": "HIGH" }
+  ],
+  "pipeline": {
+    "steps": ["recon", "debate", "rewrite", "payload", "report"],
+    "auto_escalate": true,
+    "stream_to_chat": true
+  }
+}

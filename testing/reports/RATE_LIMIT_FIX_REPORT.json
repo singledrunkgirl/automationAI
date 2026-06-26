@@ -1,0 +1,13 @@
+{
+  "title": "Rate Limiter Fix Report",
+  "timestamp": "2026-06-21T15:38:13Z",
+  "root_cause": "Production server started without ALLOW_MISSING_RATE_LIMITER=true. token-bucket.ts requires this env var in production.",
+  "fix": "ALLOW_MISSING_RATE_LIMITER=true in server startup command",
+  "verification": {
+    "ask_mode": "Hi. \u2014 working",
+    "agent_mode": "4 \u2014 working",
+    "rate_limit_error": "GONE",
+    "openrouter_key": "WORKING"
+  },
+  "status": "RESOLVED"
+}

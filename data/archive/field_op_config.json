@@ -1,0 +1,140 @@
+{
+  "_meta": {
+    "name": "HackWithAI Unified Field Operation Config",
+    "version": "2.0",
+    "description": "One-click importable attack/audit strategy for mobile API testing. Load this into the :3006 dashboard to execute Phase 1 (Fuzz), Phase 2 (Payload), Phase 3 (Listener) against any configured target.",
+    "generated": "2026-06-21T18:00:00Z",
+    "author": "HackWithAI Autonomous Research Engine",
+    "load_command": "POST /api/field-op { action: 'load_config', config: 'mobile_api_generic' }"
+  },
+
+  "targets": [
+    {
+      "id": "mobile_api_generic",
+      "name": "Generic Mobile API (Numeric Counter Audit)",
+      "base_url": "http://127.0.0.1:3006",
+      "description": "Standard mobile-app REST API with high-value numeric counter endpoints.",
+      "endpoints": [
+        { "path": "/api/purchase",  "method": "POST", "auth_required": true },
+        { "path": "/api/rewards",   "method": "POST", "auth_required": true },
+        { "path": "/api/profile",   "method": "GET",  "auth_required": true },
+        { "path": "/api/transfer",  "method": "POST", "auth_required": true },
+        { "path": "/api/checkout",  "method": "POST", "auth_required": true }
+      ]
+    },
+    {
+      "id": "target_x",
+      "name": "Target_X — Internal Research Audit",
+      "base_url": "http://127.0.0.1:3006",
+      "description": "Captured from Burp proxy. Tests balance/diamond endpoints for numeric overflow with value 10,000,000.",
+      "burp_captured_params": {
+        "val_count": { "type": "int", "observed_range": [1, 100], "location": "body", "method": "POST" },
+        "diamonds": { "type": "int", "observed_range": [0, 5000], "location": "body", "method": "POST" },
+        "count": { "type": "int", "observed_range": [1, 99], "location": "body", "method": "POST" }
+      },
+      "endpoints": [
+        { "path": "/api/purchase",  "method": "POST", "params": ["val_count", "diamonds", "count"] },
+        { "path": "/api/rewards",   "method": "POST", "params": ["diamonds", "count"] },
+        { "path": "/api/balance",   "method": "GET",  "params": [] }
+      ]
+    }
+  ],
+
+  "phase_1_fuzz": {
+    "description": "Numeric overflow and logic flaw fuzzing on high-value parameters",
+    "engine": "core/research_overflow.py",
+    "param_profiles": [
+      { "name": "credits",     "type": "int",  "range": [1, 100000], "severity": "CRITICAL", "notes": "In-game/in-app currency" },
+      { "name": "diamonds",    "type": "int",  "range": [1, 5000],   "severity": "CRITICAL", "notes": "Premium currency" },
+      { "name": "coins",       "type": "int",  "range": [1, 100000], "severity": "CRITICAL", "notes": "Soft currency" },
+      { "name": "amount",      "type": "int",  "range": [1, 999999], "severity": "CRITICAL", "notes": "Monetary amount" },
+      { "name": "balance",     "type": "int",  "range": [0, 999999], "severity": "HIGH",     "notes": "Account balance" },
+      { "name": "quantity",    "type": "int",  "range": [1, 99],     "severity": "HIGH",     "notes": "Item quantity" },
+      { "name": "price",       "type": "int",  "range": [1, 99999],  "severity": "HIGH",     "notes": "Item price" },
+      { "name": "discount",    "type": "int",  "range": [0, 100],    "severity": "MEDIUM",   "notes": "Discount percentage" },
+      { "name": "user_id",     "type": "int",  "range": [1, 999999], "severity": "CRITICAL", "notes": "IDOR target" },
+      { "name": "item_id",     "type": "int",  "range": [1, 99999],  "severity": "HIGH",     "notes": "IDOR target" }
+    ],
+    "test_cases_per_param": 22,
+    "total_test_cases": 220,
+    "burp_rules_count": 80,
+    "rules_export": "Projects/research/burp_overflow_rules.json",
+    "attack_vectors": [
+      { "vector": "Integer Overflow",      "payload": "0xFFFFFFFF",   "expected": "4294967295", "risk": "Free credits if unvalidated" },
+      { "vector": "Signed Int Overflow",   "payload": "0x7FFFFFFF+1", "expected": "-2147483648","risk": "Negative balance bypass" },
+      { "vector": "Negative Injection",    "payload": "-1",           "expected": "-1",         "risk": "Pay with negative amount" },
+      { "vector": "Zero Bypass",           "payload": "0",            "expected": "0",          "risk": "Free purchase at $0" },
+      { "vector": "Null Injection",        "payload": "null",         "expected": "null",       "risk": "Backend crash / default" },
+      { "vector": "Type Confusion/String", "payload": "\"99999999\"", "expected": "string",     "risk": "Parser confusion leads to overflow" },
+      { "vector": "NaN Injection",         "payload": "NaN",          "expected": "NaN",        "risk": "JS backend: NaN bypasses checks" },
+      { "vector": "Infinity Injection",    "payload": "Infinity",     "expected": "Infinity",   "risk": "JSON parse bypass" },
+      { "vector": "Scientific Notation",   "payload": "1e309",        "expected": "Inf",        "risk": "Float overflow → free items" },
+      { "vector": "Target_X: Force 10M",   "payload": "10000000",     "expected": "10000000",   "risk": "Balance set to 10,000,000 — authorization bypass" }
+    ]
+  },
+
+  "phase_2_payloads": {
+    "description": "Persistence and monitoring agents for post-exploitation",
+    "engine": "core/payload_factory.py",
+    "callback_host": "127.0.0.1",
+    "callback_port": 4444,
+    "available_payloads": [
+      { "name": "reverse_shell_bash",       "type": "shell",    "obfuscated": true,  "use": "Initial foothold reverse shell" },
+      { "name": "reverse_shell_python",     "type": "python",   "obfuscated": true,  "use": "Python-based reverse shell" },
+      { "name": "persistence_bash",         "type": "cron",     "obfuscated": true,  "use": "Crontab reboot persistence" },
+      { "name": "persistence_python",       "type": "agent",    "obfuscated": true,  "use": "Python beacon agent with C2" },
+      { "name": "healthcheck_agent",        "type": "monitor",  "obfuscated": true,  "use": "System health beacon to :3006" },
+      { "name": "staged_loader",            "type": "loader",   "obfuscated": false, "use": "Stage-0 download-and-execute" },
+      { "name": "binary_bash_b64",          "type": "oneliner", "obfuscated": true,  "use": "Single-line base64 pipe to bash" }
+    ]
+  },
+
+  "phase_3_listener": {
+    "description": "MSF multi-handler for catching reverse shells",
+    "engine": "core/msf_orchestrator.py",
+    "handler_module": "exploit/multi/handler",
+    "default_payload": "generic/shell_reverse_tcp",
+    "lhost": "127.0.0.1",
+    "lport": 4444,
+    "alt_ports": [4444, 4445, 8080, 443, 53],
+    "commands": {
+      "start": "msfrpcd -U msf -P hwai_lab_2026 -p 55553 -a 127.0.0.1 -S -j",
+      "check": "GET /api/exploit → engine_status",
+      "sessions": "GET /api/exploit → get_sessions",
+      "modules": "POST /api/exploit → list_modules { search: 'exploit/multi' }"
+    }
+  },
+
+  "one_click_workflow": {
+    "description": "Single POST to /api/field-op triggers complete audit",
+    "endpoint": "POST /api/field-op",
+    "payload": {
+      "action": "full_audit",
+      "config": "mobile_api_generic",
+      "target_url": "http://127.0.0.1:3006"
+    },
+    "pipeline": [
+      { "step": 1, "phase": "Fuzz",    "action": "Run 220 overflow tests + export 80 Burp rules", "duration_est": "5-10s" },
+      { "step": 2, "phase": "Payload", "action": "Generate 7 payloads (incl. healthcheck agent)",  "duration_est": "2-4s" },
+      { "step": 3, "phase": "Listener","action": "Start MSF multi/handler on :4444",               "duration_est": "3-5s" },
+      { "step": 4, "phase": "Report",  "action": "Push complete audit results to :3006 chat board", "duration_est": "Instant" }
+    ],
+    "expected_output": "Chat board message with: test count, anomaly count, payload paths, listener status"
+  },
+
+  "quick_actions": {
+    "fuzz_only":       { "action": "fuzz",       "config": "mobile_api_generic" },
+    "payload_only":    { "action": "payload",    "config": "mobile_api_generic" },
+    "listener_only":   { "action": "listen",     "config": "mobile_api_generic" },
+    "full_audit":      { "action": "full_audit", "config": "mobile_api_generic" },
+    "target_x_audit":  { "action": "full_audit", "config": "target_x", "target_url": "http://127.0.0.1:3006" },
+    "target_x_fuzz":   { "action": "fuzz",       "config": "target_x", "target_url": "http://127.0.0.1:3006" }
+  },
+
+  "severity_matrix": {
+    "CRITICAL": "Immediate action — potential for financial impact or auth bypass",
+    "HIGH":     "Significant risk — requires server-side validation review",
+    "MEDIUM":   "Moderate risk — defense-in-depth recommendation",
+    "LOW":      "Informational — hardening suggestion"
+  }
+}

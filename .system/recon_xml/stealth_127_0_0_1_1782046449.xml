@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.99 scan initiated Sun Jun 21 18:24:09 2026 as: /usr/lib/nmap/nmap -&#45;privileged -sS -Pn -T4 -&#45;max-retries 1 -&#45;min-rate 100 -&#45;max-rate 300 -f -&#45;data-length 16 -p 1-1000 -&#45;randomize-hosts -oA /home/kali/HackWithAI/.system/recon_xml/stealth_127_0_0_1_1782046449 127.0.0.1 -->
+<nmaprun scanner="nmap" args="/usr/lib/nmap/nmap -&#45;privileged -sS -Pn -T4 -&#45;max-retries 1 -&#45;min-rate 100 -&#45;max-rate 300 -f -&#45;data-length 16 -p 1-1000 -&#45;randomize-hosts -oA /home/kali/HackWithAI/.system/recon_xml/stealth_127_0_0_1_1782046449 127.0.0.1" start="1782046449" startstr="Sun Jun 21 18:24:09 2026" version="7.99" xmloutputversion="1.05">
+<scaninfo type="syn" protocol="tcp" numservices="1000" services="1-1000"/>
+<verbose level="0"/>
+<debugging level="0"/>
+<host starttime="1782046449" endtime="1782046452"><status state="up" reason="user-set" reason_ttl="0"/>
+<address addr="127.0.0.1" addrtype="ipv4"/>
+<hostnames>
+<hostname name="localhost" type="PTR"/>
+</hostnames>
+<ports><extraports state="closed" count="999">
+<extrareasons reason="reset" count="999" proto="tcp" ports="1-79,81-1000"/>
+</extraports>
+<port protocol="tcp" portid="80"><state state="open" reason="syn-ack" reason_ttl="64"/><service name="http" method="table" conf="3"/></port>
+</ports>
+<times srtt="35" rttvar="9" to="100000"/>
+</host>
+<runstats><finished time="1782046452" timestr="Sun Jun 21 18:24:12 2026" summary="Nmap done at Sun Jun 21 18:24:12 2026; 1 IP address (1 host up) scanned in 3.40 seconds" elapsed="3.40" exit="success"/><hosts up="1" down="0" total="1"/>
+</runstats>
+</nmaprun>

@@ -1,0 +1,487 @@
+{
+  "query": "database dump",
+  "timestamp": "2026-06-20T01:46:15.794872",
+  "summary": {
+    "products_found": 25,
+    "vendors": 25,
+    "markets_covered": 5,
+    "avg_price": 89.0,
+    "avg_trust": 96.1,
+    "best_deal": {
+      "name": "Database Dump Package #1",
+      "price": 15,
+      "vendor": "vendor_02f4"
+    },
+    "most_trusted": {
+      "name": "Database Dump Package #2",
+      "score": 100.0,
+      "vendor": "vendor_3b8b"
+    }
+  },
+  "top_products": [
+    {
+      "id": "alp-3b8bdf36",
+      "name": "Database Dump Package #2",
+      "vendor": "vendor_3b8b",
+      "vendor_rating": 4.3,
+      "price": 52,
+      "sales_count": 170,
+      "vendor_age_days": 240,
+      "positive_reviews_pct": 78,
+      "dispute_rate": 4.2,
+      "escrow_accepted": true,
+      "shipping_from": "EU",
+      "category": "physical",
+      "description": "High quality database dump from trusted vendor on alphabay",
+      "market": "alphabay",
+      "trust_score": 100.0
+    },
+    {
+      "id": "alp-3b054964",
+      "name": "Database Dump Package #3",
+      "vendor": "vendor_3b05",
+      "vendor_rating": 5.1,
+      "price": 89,
+      "sales_count": 290,
+      "vendor_age_days": 420,
+      "positive_reviews_pct": 86,
+      "dispute_rate": 3.4,
+      "escrow_accepted": true,
+      "shipping_from": "UK",
+      "category": "service",
+      "description": "High quality database dump from trusted vendor on alphabay",
+      "market": "alphabay",
+      "trust_score": 100.0
+    },
+    {
+      "id": "alp-983939a1",
+      "name": "Database Dump Package #4",
+      "vendor": "vendor_9839",
+      "vendor_rating": 5.9,
+      "price": 126,
+      "sales_count": 410,
+      "vendor_age_days": 600,
+      "positive_reviews_pct": 94,
+      "dispute_rate": 2.6,
+      "escrow_accepted": false,
+      "shipping_from": "Asia",
+      "category": "data",
+      "description": "High quality database dump from trusted vendor on alphabay",
+      "market": "alphabay",
+      "trust_score": 100.0
+    },
+    {
+      "id": "alp-7855e775",
+      "name": "Database Dump Package #5",
+      "vendor": "vendor_7855",
+      "vendor_rating": 6.7,
+      "price": 163,
+      "sales_count": 530,
+      "vendor_age_days": 780,
+      "positive_reviews_pct": 100,
+      "dispute_rate": 1.8,
+      "escrow_accepted": false,
+      "shipping_from": "SA",
+      "category": "tools",
+      "description": "High quality database dump from trusted vendor on alphabay",
+      "market": "alphabay",
+      "trust_score": 100.0
+    },
+    {
+      "id": "dar-bc79d04c",
+      "name": "Database Dump Package #2",
+      "vendor": "vendor_bc79",
+      "vendor_rating": 4.3,
+      "price": 52,
+      "sales_count": 170,
+      "vendor_age_days": 240,
+      "positive_reviews_pct": 78,
+      "dispute_rate": 4.2,
+      "escrow_accepted": true,
+      "shipping_from": "EU",
+      "category": "physical",
+      "description": "High quality database dump from trusted vendor on darkfox",
+      "market": "darkfox",
+      "trust_score": 100.0
+    },
+    {
+      "id": "dar-63491efa",
+      "name": "Database Dump Package #3",
+      "vendor": "vendor_6349",
+      "vendor_rating": 5.1,
+      "price": 89,
+      "sales_count": 290,
+      "vendor_age_days": 420,
+      "positive_reviews_pct": 86,
+      "dispute_rate": 3.4,
+      "escrow_accepted": true,
+      "shipping_from": "UK",
+      "category": "service",
+      "description": "High quality database dump from trusted vendor on darkfox",
+      "market": "darkfox",
+      "trust_score": 100.0
+    },
+    {
+      "id": "dar-0235a1df",
+      "name": "Database Dump Package #4",
+      "vendor": "vendor_0235",
+      "vendor_rating": 5.9,
+      "price": 126,
+      "sales_count": 410,
+      "vendor_age_days": 600,
+      "positive_reviews_pct": 94,
+      "dispute_rate": 2.6,
+      "escrow_accepted": false,
+      "shipping_from": "Asia",
+      "category": "data",
+      "description": "High quality database dump from trusted vendor on darkfox",
+      "market": "darkfox",
+      "trust_score": 100.0
+    },
+    {
+      "id": "dar-ab9f30a9",
+      "name": "Database Dump Package #5",
+      "vendor": "vendor_ab9f",
+      "vendor_rating": 6.7,
+      "price": 163,
+      "sales_count": 530,
+      "vendor_age_days": 780,
+      "positive_reviews_pct": 100,
+      "dispute_rate": 1.8,
+      "escrow_accepted": false,
+      "shipping_from": "SA",
+      "category": "tools",
+      "description": "High quality database dump from trusted vendor on darkfox",
+      "market": "darkfox",
+      "trust_score": 100.0
+    },
+    {
+      "id": "wea-1be869e7",
+      "name": "Database Dump Package #2",
+      "vendor": "vendor_1be8",
+      "vendor_rating": 4.3,
+      "price": 52,
+      "sales_count": 170,
+      "vendor_age_days": 240,
+      "positive_reviews_pct": 78,
+      "dispute_rate": 4.2,
+      "escrow_accepted": true,
+      "shipping_from": "EU",
+      "category": "physical",
+      "description": "High quality database dump from trusted vendor on weasel",
+      "market": "weasel",
+      "trust_score": 100.0
+    },
+    {
+      "id": "wea-b10d2051",
+      "name": "Database Dump Package #3",
+      "vendor": "vendor_b10d",
+      "vendor_rating": 5.1,
+      "price": 89,
+      "sales_count": 290,
+      "vendor_age_days": 420,
+      "positive_reviews_pct": 86,
+      "dispute_rate": 3.4,
+      "escrow_accepted": true,
+      "shipping_from": "UK",
+      "category": "service",
+      "description": "High quality database dump from trusted vendor on weasel",
+      "market": "weasel",
+      "trust_score": 100.0
+    },
+    {
+      "id": "wea-0199b484",
+      "name": "Database Dump Package #4",
+      "vendor": "vendor_0199",
+      "vendor_rating": 5.9,
+      "price": 126,
+      "sales_count": 410,
+      "vendor_age_days": 600,
+      "positive_reviews_pct": 94,
+      "dispute_rate": 2.6,
+      "escrow_accepted": false,
+      "shipping_from": "Asia",
+      "category": "data",
+      "description": "High quality database dump from trusted vendor on weasel",
+      "market": "weasel",
+      "trust_score": 100.0
+    },
+    {
+      "id": "wea-c40701fe",
+      "name": "Database Dump Package #5",
+      "vendor": "vendor_c407",
+      "vendor_rating": 6.7,
+      "price": 163,
+      "sales_count": 530,
+      "vendor_age_days": 780,
+      "positive_reviews_pct": 100,
+      "dispute_rate": 1.8,
+      "escrow_accepted": false,
+      "shipping_from": "SA",
+      "category": "tools",
+      "description": "High quality database dump from trusted vendor on weasel",
+      "market": "weasel",
+      "trust_score": 100.0
+    },
+    {
+      "id": "aba-1ccaedd5",
+      "name": "Database Dump Package #2",
+      "vendor": "vendor_1cca",
+      "vendor_rating": 4.3,
+      "price": 52,
+      "sales_count": 170,
+      "vendor_age_days": 240,
+      "positive_reviews_pct": 78,
+      "dispute_rate": 4.2,
+      "escrow_accepted": true,
+      "shipping_from": "EU",
+      "category": "physical",
+      "description": "High quality database dump from trusted vendor on abacus",
+      "market": "abacus",
+      "trust_score": 100.0
+    },
+    {
+      "id": "aba-beba87de",
+      "name": "Database Dump Package #3",
+      "vendor": "vendor_beba",
+      "vendor_rating": 5.1,
+      "price": 89,
+      "sales_count": 290,
+      "vendor_age_days": 420,
+      "positive_reviews_pct": 86,
+      "dispute_rate": 3.4,
+      "escrow_accepted": true,
+      "shipping_from": "UK",
+      "category": "service",
+      "description": "High quality database dump from trusted vendor on abacus",
+      "market": "abacus",
+      "trust_score": 100.0
+    },
+    {
+      "id": "aba-6f84fcc3",
+      "name": "Database Dump Package #4",
+      "vendor": "vendor_6f84",
+      "vendor_rating": 5.9,
+      "price": 126,
+      "sales_count": 410,
+      "vendor_age_days": 600,
+      "positive_reviews_pct": 94,
+      "dispute_rate": 2.6,
+      "escrow_accepted": false,
+      "shipping_from": "Asia",
+      "category": "data",
+      "description": "High quality database dump from trusted vendor on abacus",
+      "market": "abacus",
+      "trust_score": 100.0
+    },
+    {
+      "id": "aba-a281ced9",
+      "name": "Database Dump Package #5",
+      "vendor": "vendor_a281",
+      "vendor_rating": 6.7,
+      "price": 163,
+      "sales_count": 530,
+      "vendor_age_days": 780,
+      "positive_reviews_pct": 100,
+      "dispute_rate": 1.8,
+      "escrow_accepted": false,
+      "shipping_from": "SA",
+      "category": "tools",
+      "description": "High quality database dump from trusted vendor on abacus",
+      "market": "abacus",
+      "trust_score": 100.0
+    },
+    {
+      "id": "tor-dcc7ef0b",
+      "name": "Database Dump Package #2",
+      "vendor": "vendor_dcc7",
+      "vendor_rating": 4.3,
+      "price": 52,
+      "sales_count": 170,
+      "vendor_age_days": 240,
+      "positive_reviews_pct": 78,
+      "dispute_rate": 4.2,
+      "escrow_accepted": true,
+      "shipping_from": "EU",
+      "category": "physical",
+      "description": "High quality database dump from trusted vendor on torrez",
+      "market": "torrez",
+      "trust_score": 100.0
+    },
+    {
+      "id": "tor-8d090661",
+      "name": "Database Dump Package #3",
+      "vendor": "vendor_8d09",
+      "vendor_rating": 5.1,
+      "price": 89,
+      "sales_count": 290,
+      "vendor_age_days": 420,
+      "positive_reviews_pct": 86,
+      "dispute_rate": 3.4,
+      "escrow_accepted": true,
+      "shipping_from": "UK",
+      "category": "service",
+      "description": "High quality database dump from trusted vendor on torrez",
+      "market": "torrez",
+      "trust_score": 100.0
+    },
+    {
+      "id": "tor-f0e2f6f1",
+      "name": "Database Dump Package #4",
+      "vendor": "vendor_f0e2",
+      "vendor_rating": 5.9,
+      "price": 126,
+      "sales_count": 410,
+      "vendor_age_days": 600,
+      "positive_reviews_pct": 94,
+      "dispute_rate": 2.6,
+      "escrow_accepted": false,
+      "shipping_from": "Asia",
+      "category": "data",
+      "description": "High quality database dump from trusted vendor on torrez",
+      "market": "torrez",
+      "trust_score": 100.0
+    },
+    {
+      "id": "tor-a95a4487",
+      "name": "Database Dump Package #5",
+      "vendor": "vendor_a95a",
+      "vendor_rating": 6.7,
+      "price": 163,
+      "sales_count": 530,
+      "vendor_age_days": 780,
+      "positive_reviews_pct": 100,
+      "dispute_rate": 1.8,
+      "escrow_accepted": false,
+      "shipping_from": "SA",
+      "category": "tools",
+      "description": "High quality database dump from trusted vendor on torrez",
+      "market": "torrez",
+      "trust_score": 100.0
+    }
+  ],
+  "vendor_analysis": {
+    "vendor_0199": {
+      "score": 70,
+      "verdict": "CAUTION \u2014 Verify before purchase"
+    },
+    "vendor_bc79": {
+      "score": 78,
+      "verdict": "TRUSTED \u2014 Recommended"
+    },
+    "vendor_9839": {
+      "score": 80,
+      "verdict": "TRUSTED \u2014 Recommended"
+    },
+    "vendor_8d09": {
+      "score": 90,
+      "verdict": "TRUSTED \u2014 Recommended"
+    },
+    "vendor_1cca": {
+      "score": 83,
+      "verdict": "TRUSTED \u2014 Recommended"
+    },
+    "vendor_a95a": {
+      "score": 73,
+      "verdict": "CAUTION \u2014 Verify before purchase"
+    },
+    "vendor_3b8b": {
+      "score": 72,
+      "verdict": "CAUTION \u2014 Verify before purchase"
+    },
+    "vendor_1be8": {
+      "score": 73,
+      "verdict": "CAUTION \u2014 Verify before purchase"
+    },
+    "vendor_beba": {
+      "score": 73,
+      "verdict": "CAUTION \u2014 Verify before purchase"
+    },
+    "vendor_5a5d": {
+      "score": 72,
+      "verdict": "CAUTION \u2014 Verify before purchase"
+    }
+  },
+  "forum_discussions": [
+    {
+      "title": "Discussion about database dump #1",
+      "forum": "dread",
+      "author": "user_8d44da",
+      "date": "2026-06-20T01:46:15.794833",
+      "replies": 5,
+      "relevance_score": 95,
+      "snippet": "Found database dump on the dark web. Multiple sources confirm availability. Trust score analysis shows medium-high reliability."
+    },
+    {
+      "title": "Discussion about database dump #2",
+      "forum": "exploit",
+      "author": "user_5e2e11",
+      "date": "2026-06-19T01:46:15.794853",
+      "replies": 17,
+      "relevance_score": 80,
+      "snippet": "Found database dump on the dark web. Multiple sources confirm availability. Trust score analysis shows medium-high reliability."
+    },
+    {
+      "title": "Discussion about database dump #3",
+      "forum": "dread",
+      "author": "user_378245",
+      "date": "2026-06-18T01:46:15.794859",
+      "replies": 29,
+      "relevance_score": 65,
+      "snippet": "Found database dump on the dark web. Multiple sources confirm availability. Trust score analysis shows medium-high reliability."
+    }
+  ],
+  "trending_topics": [
+    {
+      "topic": "New SSH zero-day exploit",
+      "mentions": 245,
+      "forums": 8,
+      "trend": "rising"
+    },
+    {
+      "topic": "CVE-2026-1234 PoC released",
+      "mentions": 189,
+      "forums": 6,
+      "trend": "hot"
+    },
+    {
+      "topic": "Major data breach at CorpX",
+      "mentions": 312,
+      "forums": 10,
+      "trend": "hot"
+    },
+    {
+      "topic": "Dark web market exit scam alert",
+      "mentions": 156,
+      "forums": 5,
+      "trend": "rising"
+    }
+  ],
+  "recommendations": [
+    "Best overall: Database Dump Package #2 from vendor_3b8b (trust: 100.0)",
+    "Trusted vendor: vendor_8d09 (TRUSTED \u2014 Recommended)",
+    "Trusted vendor: vendor_1cca (TRUSTED \u2014 Recommended)",
+    "Trusted vendor: vendor_9839 (TRUSTED \u2014 Recommended)"
+  ],
+  "risk_assessment": {
+    "overall_risk": "MEDIUM",
+    "factors": [
+      {
+        "factor": "Vendor reliability",
+        "risk": "LOW"
+      },
+      {
+        "factor": "Product quality",
+        "risk": "MEDIUM"
+      },
+      {
+        "factor": "Shipping",
+        "risk": "HIGH"
+      },
+      {
+        "factor": "Payment safety",
+        "risk": "MEDIUM"
+      }
+    ]
+  }
+}

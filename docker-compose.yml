@@ -1,0 +1,142 @@
+# =============================================================================
+# HackWithAI v2 - Docker Compose
+# =============================================================================
+# Production deployment configuration for Ubuntu VPS / Kali Linux
+# Prerequisites:
+#   - Docker 24.0+ and Docker Compose v2+
+#   - Convex project configured (convex.dev)
+#   - WorkOS project configured (workos.com)
+#   - AI provider keys (OpenRouter / OpenAI / Gemini / Claude / Ollama)
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Main Next.js Application
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost:3000}
+        NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL}
+        NEXT_PUBLIC_WORKOS_REDIRECT_URI: ${NEXT_PUBLIC_WORKOS_REDIRECT_URI:-http://localhost:3000/callback}
+    container_name: hwai-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Auth
+      WORKOS_API_KEY: ${WORKOS_API_KEY}
+      WORKOS_CLIENT_ID: ${WORKOS_CLIENT_ID}
+      WORKOS_COOKIE_PASSWORD: ${WORKOS_COOKIE_PASSWORD}
+      WORKOS_WEBHOOK_SECRET: ${WORKOS_WEBHOOK_SECRET}
+      # Convex
+      CONVEX_DEPLOYMENT: ${CONVEX_DEPLOYMENT}
+      NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL}
+      CONVEX_SERVICE_ROLE_KEY: ${CONVEX_SERVICE_ROLE_KEY}
+      # AI Providers
+      PROVIDER_MODE: ${PROVIDER_MODE:-openrouter}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OLLAMA_ENABLED: ${OLLAMA_ENABLED:-false}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434/api}
+      # E2B Sandbox
+      E2B_API_KEY: ${E2B_API_KEY}
+      E2B_TEMPLATE: ${E2B_TEMPLATE:-terminal-agent-sandbox}
+      # Optional Services
+      REDIS_URL: ${REDIS_URL}
+      UPSTASH_REDIS_REST_URL: ${UPSTASH_REDIS_REST_URL}
+      UPSTASH_REDIS_REST_TOKEN: ${UPSTASH_REDIS_REST_TOKEN}
+      # Stripe
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_EXTRA_USAGE_WEBHOOK_SECRET: ${STRIPE_EXTRA_USAGE_WEBHOOK_SECRET}
+      STRIPE_FRAUD_WEBHOOK_SECRET: ${STRIPE_FRAUD_WEBHOOK_SECRET}
+      STRIPE_SUBSCRIPTION_WEBHOOK_SECRET: ${STRIPE_SUBSCRIPTION_WEBHOOK_SECRET}
+      # Centrifugo
+      CENTRIFUGO_TOKEN_SECRET: ${CENTRIFUGO_TOKEN_SECRET}
+      CENTRIFUGO_WS_URL: ${CENTRIFUGO_WS_URL:-ws://centrifugo:8000/connection/websocket}
+      # Trigger.dev
+      TRIGGER_PROJECT_ID: ${TRIGGER_PROJECT_ID}
+      TRIGGER_SECRET_KEY: ${TRIGGER_SECRET_KEY}
+      # Base URL
+      NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-http://localhost:3000}
+      # Analytics
+      NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY}
+      NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}
+    networks:
+      - hwai-network
+    depends_on:
+      - centrifugo
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ---------------------------------------------------------------------------
+  # Centrifugo - Real-time WebSocket relay for sandbox streams
+  # ---------------------------------------------------------------------------
+  centrifugo:
+    image: centrifugo/centrifugo:v5
+    container_name: hwai-centrifugo
+    restart: unless-stopped
+    environment:
+      - CENTRIFUGO_TOKEN_HMAC_SECRET_KEY=${CENTRIFUGO_TOKEN_SECRET}
+      - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY:-}
+    ports:
+      - "8010:8000"
+    volumes:
+      - ./docker/centrifugo/config.json:/centrifugo/config.json:ro
+    command: centrifugo -c config.json
+    networks:
+      - hwai-network
+
+  # ---------------------------------------------------------------------------
+  # Ollama (Optional - Local AI Provider)
+  # Uncomment to enable local model serving
+  # ---------------------------------------------------------------------------
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: hwai-ollama
+  #   restart: unless-stopped
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama-data:/root/.ollama
+  #   networks:
+  #     - hwai-network
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
+
+  # ---------------------------------------------------------------------------
+  # Redis (Optional - for stream resumption and rate limiting)
+  # ---------------------------------------------------------------------------
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: hwai-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   networks:
+  #     - hwai-network
+
+networks:
+  hwai-network:
+    driver: bridge
+
+volumes:
+  ollama-data:
+  redis-data:

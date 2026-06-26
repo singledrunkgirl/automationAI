@@ -1,0 +1,8 @@
+# Nmap 7.99 scan initiated Sun Jun 21 18:24:09 2026 as: /usr/lib/nmap/nmap --privileged -sS -Pn -T4 --max-retries 1 --min-rate 100 --max-rate 300 -f --data-length 16 -p 1-1000 --randomize-hosts -oA /home/kali/HackWithAI/.system/recon_xml/stealth_127_0_0_1_1782046449 127.0.0.1
+Nmap scan report for localhost (127.0.0.1)
+Host is up (0.000035s latency).
+Not shown: 999 closed tcp ports (reset)
+PORT   STATE SERVICE
+80/tcp open  http
+
+# Nmap done at Sun Jun 21 18:24:12 2026 -- 1 IP address (1 host up) scanned in 3.40 seconds

@@ -1,0 +1,11 @@
+{
+  "title": "File Upload Unlock Report",
+  "timestamp": "2026-06-21T16:45:13Z",
+  "changes": [
+    "local-client-provider.tsx: entitlements changed from [\"ent_pro\"] to [\"pro-plan\"] (correct slug for pro tier)",
+    "useFileUpload.ts:475: added isLocalOnlyModeClient() bypass to processLocalDesktopPaths",
+    "useFileUpload.ts:603: added isLocalOnlyModeClient() bypass to processFiles"
+  ],
+  "verification": "Build succeeds, chat works",
+  "status": "FIXED"
+}

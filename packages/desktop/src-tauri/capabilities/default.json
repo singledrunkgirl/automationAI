@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schema.tauri.app/config/2/capability",
+  "identifier": "default",
+  "description": "Default capabilities for HackWithAI v2 Desktop",
+  "windows": ["main"],
+  "remote": {
+    "urls": ["http://localhost:*", "http://127.0.0.1:*"]
+  },
+  "permissions": [
+    "core:default",
+    {
+      "identifier": "shell:allow-open",
+      "allow": [
+        { "path": "http://**", "scheme": "http" },
+        { "path": "https://**", "scheme": "https" }
+      ]
+    },
+    "allow-desktop-command-bridge",
+    "os:default",
+    "process:default",
+    "deep-link:default",
+    "dialog:default",
+    "opener:default",
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        { "path": "$HOME/**" },
+        { "path": "$DOWNLOAD/**" },
+        { "path": "/tmp/hwai-upload/**" },
+        { "path": "/tmp/hwai/**" }
+      ]
+    }
+  ]
+}
