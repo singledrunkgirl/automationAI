@@ -26,16 +26,15 @@ import json
 export async function POST(req: Request) {
   const { action, query, url } = await req.json();
   try {
-    const { stdout } = await execAsync(`cd /home/kali/HackWithAI && python3 -c "
+    const { stdout, stderr } = await execAsync(`cd /home/kali/HackWithAI && python3 -c "
 import sys, json; sys.path.insert(0,'.')
-${action === 'search' ? `
-from tools.darkweb_tools import DarkWebSearch
 from tools.tor_manager import get_tor
 t = get_tor()
-if not t.start(): raise Exception('Tor not available')
+${action === 'search' ? `
+from tools.darkweb_tools import DarkWebSearch
 s = DarkWebSearch(t)
 r = s.search_all('${query || ''}')
-print(json.dumps({'ahmia': len(r['ahmia']), 'torch': len(r['torch']), 'total': sum(len(v) for v in r.values() if isinstance(v, list))}))
+print(json.dumps({'ahmia': len(r.get('ahmia',[])), 'torch': len(r.get('torch',[])), 'duckduckgo_onion': len(r.get('duckduckgo_onion',[])), 'total': sum(len(v) for v in r.values() if isinstance(v, list))}))
 ` : action === 'leaks' ? `
 from tools.darkweb_tools import LeakedCredsChecker
 c = LeakedCredsChecker()
@@ -47,9 +46,14 @@ s = CryptoScanner()
 r = s.scan_address('${query || ''}')
 print(json.dumps(r))
 ` : `print(json.dumps({'error': 'unknown action'}))`}
-"`, { timeout: 30000 });
-    return NextResponse.json(JSON.parse(stdout));
+"`, { timeout: 60000 });
+    // Extract only the first JSON object (handles stray log lines from tor_manager)
+    const firstBrace = stdout.indexOf("{");
+    const lastBrace = stdout.lastIndexOf("}");
+    const jsonText = firstBrace >= 0 && lastBrace > firstBrace ? stdout.slice(firstBrace, lastBrace + 1) : stdout;
+    return NextResponse.json(JSON.parse(jsonText));
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
+

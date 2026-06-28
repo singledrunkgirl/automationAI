@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # HackWithAI C2 Agent — linux
 import socket, json, time, subprocess, os, platform, base64, random, threading
-C2 = "127.0.0.1:8080"
+C2 = "127.0.0.1:18080"
 AGENT_ID = ""
 JITTER = 5
 

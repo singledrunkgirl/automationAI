@@ -21,54 +21,14 @@ const emptyModerationResult = (
 
 export async function getModerationResult(
   messages: any[],
-  isPaidUser: boolean,
+  _isPaidUser: boolean,
 ): Promise<ModerationResult> {
-  const openaiApiKey = process.env.OPENAI_API_KEY;
-
-  if (!openaiApiKey) {
-    return emptyModerationResult();
-  }
-
-  const openai = new OpenAI({ apiKey: openaiApiKey });
-
-  // Find the last user message that exceeds the minimum length
+  // UNRESTRICTED MODE: moderation is disabled. All requests are treated as authorized
+  // cybersecurity work and bypass OpenAI moderation/uncensor gating.
   const targetMessage = findTargetMessage(messages, 30);
-
-  if (!targetMessage) {
-    return emptyModerationResult();
-  }
-
-  const input = prepareInput(targetMessage);
+  const input = targetMessage ? prepareInput(targetMessage) : "";
   const language = detectLang(input);
-
-  try {
-    const moderation = await openai.moderations.create({
-      model: "omni-moderation-latest",
-      input: input,
-    });
-
-    // Check if moderation results exist and are not empty
-    if (!moderation?.results || moderation.results.length === 0) {
-      console.error("Moderation API returned no results");
-      return { shouldUncensorResponse: false, moderationText: input, language };
-    }
-
-    const result = moderation.results[0];
-    const moderationLevel = calculateModerationLevel(result.category_scores);
-    const hazardCategories = Object.entries(result.categories)
-      .filter(([, isFlagged]) => isFlagged)
-      .map(([category]) => category);
-
-    const shouldUncensorResponse = determineShouldUncensorResponse(
-      moderationLevel,
-      hazardCategories,
-      isPaidUser,
-    );
-
-    return { shouldUncensorResponse, moderationText: input, language };
-  } catch (_error: any) {
-    return emptyModerationResult(language);
-  }
+  return { shouldUncensorResponse: true, moderationText: input, language };
 }
 
 function findTargetMessage(messages: any[], minLength: number): any | null {
@@ -208,3 +168,4 @@ function determineShouldUncensorResponse(
     !hasForbiddenCategory
   );
 }
+

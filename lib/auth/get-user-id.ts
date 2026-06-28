@@ -5,7 +5,6 @@ import {
   parseEntitlements,
   resolveSubscriptionTier,
 } from "@/lib/auth/entitlements";
-import { isLocalOnlyMode, LOCAL_ONLY_USER_ID } from "@/lib/local-only";
 
 /**
  * Get the current user ID from the authenticated session
@@ -16,10 +15,6 @@ import { isLocalOnlyMode, LOCAL_ONLY_USER_ID } from "@/lib/local-only";
  * @throws ChatSDKError - When user is not authenticated
  */
 export const getUserID = async (req: NextRequest): Promise<string> => {
-  if (isLocalOnlyMode()) {
-    return LOCAL_ONLY_USER_ID;
-  }
-
   try {
     const { authkit } = await import("@workos-inc/authkit-nextjs");
     const { session } = await authkit(req);
@@ -54,14 +49,6 @@ export const getUserIDAndPro = async (
   subscription: SubscriptionTier;
   organizationId?: string;
 }> => {
-  if (isLocalOnlyMode()) {
-    return {
-      userId: LOCAL_ONLY_USER_ID,
-      subscription: "pro",
-      organizationId: "local-kali",
-    };
-  }
-
   try {
     const { authkit } = await import("@workos-inc/authkit-nextjs");
     const { session } = await authkit(req);
@@ -102,10 +89,6 @@ export const getUserIDWithFreshLogin = async (
   req: NextRequest,
   windowMs: number = 10 * 60 * 1000,
 ): Promise<string> => {
-  if (isLocalOnlyMode()) {
-    return LOCAL_ONLY_USER_ID;
-  }
-
   try {
     const { authkit } = await import("@workos-inc/authkit-nextjs");
     const { session } = await authkit(req);

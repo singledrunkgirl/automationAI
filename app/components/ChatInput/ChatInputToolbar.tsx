@@ -11,7 +11,6 @@ import {
   ContextUsageIndicator,
   type ContextUsageData,
 } from "@/app/components/ContextUsageIndicator";
-import { ExecuteActionButton } from "./ExecuteActionButton";
 import { useGlobalState } from "@/app/contexts/GlobalState";
 
 export interface ChatInputToolbarProps extends SubmitStopButtonProps {
@@ -37,7 +36,6 @@ export function ChatInputToolbar({
         <AttachmentButton onAttachClick={onAttachClick} />
       </div>
       <ChatModeSelector />
-      <ExecuteActionButton />
       <ModelSelector
         value={selectedModel}
         onChange={setSelectedModel}
@@ -55,3 +53,4 @@ export function ChatInputToolbar({
     </div>
   );
 }
+

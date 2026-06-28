@@ -18,12 +18,21 @@ import requests
 # ── Configuration ─────────────────────────────────────────────────────────
 MSFRPCD_HOST = os.environ.get("MSFRPCD_HOST", "127.0.0.1")
 MSFRPCD_PORT = int(os.environ.get("MSFRPCD_PORT", "55553"))
-MSFRPCD_USER = os.environ.get("MSFRPCD_USER", "msf")
-MSFRPCD_PASS = os.environ.get("MSFRPCD_PASS", "hwai_lab_2026")
-MSF_URI = f"http://{MSFRPCD_HOST}:{MSFRPCD_PORT}/api/v1/json-rpc"
+MSFRPCD_USER = os.environ.get("MSFRPCD_USER", "kali")
+MSFRPCD_PASS = os.environ.get("MSFRPCD_PASS", "2512")
+MSFRPCD_SSL = os.environ.get("MSFRPCD_SSL", "true").lower() in ("1", "true", "yes")
+MSF_API_TOKEN = os.environ.get("MSF_WS_JSON_RPC_API_TOKEN") or os.environ.get("MSF_API_TOKEN")
+if MSF_API_TOKEN == "hwai_lab_2026" or MSF_API_TOKEN == MSFRPCD_PASS:
+    MSF_API_TOKEN = None
+MSF_SCHEME = "https" if MSFRPCD_SSL else "http"
+MSF_URI = f"{MSF_SCHEME}://{MSFRPCD_HOST}:{MSFRPCD_PORT}/api/v1/json-rpc"
 CHAT_BOARD = os.environ.get("CHAT_BOARD_URL", "http://127.0.0.1:3006")
 LOG_ROOT = Path(__file__).resolve().parent.parent / "data" / "logs" / "msf"
 LOG_ROOT.mkdir(parents=True, exist_ok=True)
+
+import msgpack
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 RPC_TIMEOUT = 30
 POLL_INTERVAL = 5  # seconds between session polling
@@ -67,58 +76,63 @@ class MSFRPCClient:
 
     def __init__(self):
         self.token: Optional[str] = None
+        self.bearer = MSF_API_TOKEN
         self.session = requests.Session()
         self._lock = threading.Lock()
 
+    def _auth_headers(self) -> dict:
+        return {"Authorization": f"Bearer {self.bearer}"} if self.bearer else {}
+
     def _call(self, method: str, *params) -> dict:
-        """Authenticated MSF RPC call. Sends MsgPack or JSON, handles both response types."""
+        """Authenticated MSF RPC call using msgpack positional format over HTTPS.
+
+        msfrpcd protocol (v1):
+          - Content-Type: binary/message-pack
+          - Body: msgpack([method, *params])            (auth not yet done)
+          - After login, prepend token: msgpack([token, method, *params])
+          - Response: msgpack dict with 'error' or 'result'
+        """
         with self._lock:
-            if not self.token and method != "auth.login":
-                raise ConnectionError("Not authenticated to MSF RPC")
-            
-            # Build params with token for authenticated calls
-            all_params = ([self.token] + list(params)) if self.token else list(params)
-            msgpack_payload = [method] + all_params  # FLAT array
-            
-            # Try MsgPack binary first (works with msgrpc plugin in msfconsole)
+            if self.token:
+                # MSF RPC v1 authenticated: [method, token, *params]
+                payload_array = [method, self.token, *params]
+            else:
+                payload_array = [method, *params]
+            body = msgpack.packb(payload_array, use_bin_type=True)
+            headers = {"Content-Type": "binary/message-pack"}
+            resp = self.session.post(
+                MSF_URI, data=body, headers=headers,
+                timeout=RPC_TIMEOUT, verify=False,
+            )
             try:
-                import msgpack
-                binary = msgpack.packb(msgpack_payload)
-                headers = {"Content-Type": "application/msgpack"}
-                resp = self.session.post(MSF_URI, data=binary, headers=headers, timeout=RPC_TIMEOUT)
-                
-                # NOTE: TMUX msgrpc plugin uses JSON, not MsgPack
-                # MsgPack skipped - TMUX plugin returned "Invalid Content Type"
-            except ImportError:
-                pass
-            
-            # Fallback: JSON-RPC (msfrpcd daemon format)
-            payload = {
-                "jsonrpc": "2.0",
-                "method": method,
-                "params": ([self.token] + list(params)) if self.token else list(params),
-                "id": int(time.time() * 1000),
-            }
-            headers = {"Content-Type": "application/json"}
-            resp = self.session.post(MSF_URI, json=payload, headers=headers, timeout=RPC_TIMEOUT)
-            
-            try:
-                data = resp.json()
-            except json.JSONDecodeError:
-                raise RuntimeError(f"MSF RPC: invalid JSON response (status={resp.status_code}, body={resp.content[:200]})")
-            
-            if "error" in data:
-                raise RuntimeError(f"MSF RPC error: {data['error']}")
+                data = msgpack.unpackb(resp.content, raw=False)
+            except Exception as e:
+                raise RuntimeError(
+                    f"MSF RPC: failed to decode msgpack (status={resp.status_code}, "
+                    f"body={resp.content[:200]!r}): {e}"
+                )
+            if isinstance(data, dict) and data.get("error"):
+                err = data.get("error_string") or data.get("error_message") or data.get("error")
+                raise RuntimeError(f"MSF RPC error: {err}")
+            if isinstance(data, dict):
+                return data.get("result", data)
             return data
-            return data.get("result", {})
 
     # ── Authentication ────────────────────────────────────────────────
     def login(self) -> bool:
+        """Authenticate via auth.login RPC, return token for subsequent calls."""
         try:
             result = self._call("auth.login", MSFRPCD_USER, MSFRPCD_PASS)
-            if result.get("result") == "success":
-                self.token = result.get("token")
+            if isinstance(result, dict) and result.get(b"result", result.get("result")) in (b"success", "success"):
+                token = result.get(b"token", result.get("token"))
+                if isinstance(token, bytes):
+                    token = token.decode()
+                self.token = token
                 return True
+            elif isinstance(result, bytes) and result == b"success":
+                self.token = MSFRPCD_PASS
+                return True
+            print(f"[MSF] Unexpected login response: {result!r}")
         except Exception as e:
             print(f"[MSF] Login failed: {e}")
         return False
@@ -138,8 +152,10 @@ class MSFRPCClient:
     # ── Module Operations ──────────────────────────────────────────────
     def list_modules(self, pattern: str = "") -> list:
         """Search modules. Empty pattern returns recent/top modules."""
-        kwargs = {"search_term": pattern} if pattern else {}
-        result = self._call("module.search", **kwargs) if kwargs else self._call("module.search")
+        if pattern:
+            result = self._call("module.search", pattern)
+        else:
+            result = self._call("module.search")
         if isinstance(result, dict):
             return result.get("modules", [])
         return result if isinstance(result, list) else []
@@ -186,7 +202,7 @@ class MSFRPCClient:
     def job_info(self, job_id: int) -> dict:
         return self._call("job.info", job_id=job_id)
 
-    # ── Core Utilities ─────────────────────────────────────────────────
+    # ── Core Utilities ─────────────────────────────────────────────��───
     def core_version(self) -> dict:
         return self._call("core.version")
 
@@ -194,7 +210,7 @@ class MSFRPCClient:
         return self._call("core.module_stats")
 
 
-# ── Orchestrator ──────────────────────────────────────────────────────────
+# ── Orchestrator ─────────────────��─��──────────────────────────────────────
 class MSFOrchestrator:
     """
     High-level orchestrator that manages the MSF lifecycle, tracks sessions,
@@ -275,7 +291,7 @@ class MSFOrchestrator:
         try:
             result = self.client.execute_module("exploit", module_name, options)
             job_id = result.get("job_id")
-            uuid_val = result.get("uuid")
+            uuid = result.get("uuid")
 
             er = ExploitResult(
                 status="completed" if job_id else "failed",
@@ -288,11 +304,10 @@ class MSFOrchestrator:
 
             self._emit("exploit_done", asdict(er))
 
-            # Log to file
             log_file = LOG_ROOT / f"{module_name.replace('/','_')}_{int(time.time())}.json"
             log_file.write_text(json.dumps(asdict(er), indent=2, default=str))
 
-            msg = f"EXPLOIT: {module_name} → {rhost}:{rport}\nJob: {job_id}\nStatus: {er.status}"
+            msg = f"EXPLOIT: {module_name} -> {rhost}:{rport}\nJob: {job_id}\nStatus: {er.status}"
             self._push_chat(msg)
             return er
 
@@ -301,7 +316,7 @@ class MSFOrchestrator:
                              target=f"{rhost}:{rport}", error=str(e),
                              timestamp=timestamp)
             self._emit("exploit_error", asdict(er))
-            self._push_chat(f"EXPLOIT FAILED: {module_name} → {rhost}\nError: {str(e)[:200]}")
+            self._push_chat(f"EXPLOIT FAILED: {module_name} -> {rhost}\nError: {str(e)[:200]}")
             return er
 
     def run_auxiliary(self, module_name: str, options: dict) -> dict:
@@ -311,7 +326,6 @@ class MSFOrchestrator:
         self._push_chat(f"AUX: {module_name} completed")
         return result
 
-    # ── Session Management ─────────────────────────────────────────────
     def get_sessions(self) -> dict:
         return self.client.list_sessions()
 
@@ -336,16 +350,13 @@ class MSFOrchestrator:
         self._emit("meterpreter_output", {"sid": session_id, "command": command, "output": output[:500]})
         return output
 
-    # ── Job Management ─────────────────────────────────────────────────
     def get_jobs(self) -> dict:
         return self.client.list_jobs()
 
     def kill_job(self, job_id: int):
         self.client.job_stop(job_id)
 
-    # ── Internal: Session Polling ──────────────────────────────────────
     def _poll_loop(self):
-        """Background thread: checks for new/lost sessions and emits events."""
         while self._running:
             try:
                 sessions = self.client.list_sessions()
@@ -353,18 +364,16 @@ class MSFOrchestrator:
                 for sid_str, info in sessions.items():
                     sid = int(sid_str) if sid_str.isdigit() else sid_str
                     current[sid] = info
-
                 for sid in set(current) - set(self._known_sessions):
                     self._on_session_open(sid, current[sid])
                 for sid in set(self._known_sessions) - set(current):
                     self._on_session_close(sid)
-
                 self._known_sessions = current
             except Exception:
                 pass
             time.sleep(POLL_INTERVAL)
 
-    def _on_session_open(self, sid: int, info: dict):
+    def _on_session_open(self, sid, info):
         msg = f"SESSION OPEN: #{sid} | Type: {info.get('type','?')} | Target: {info.get('target_host','?')}\nInfo: {info.get('info','')[:200]}"
         self._emit("session_open", {"sid": sid, "info": info})
         self._push_chat(msg)
@@ -380,7 +389,7 @@ class MSFOrchestrator:
             f.write(json.dumps({"event": "session_close", "sid": sid,
                                 "timestamp": datetime.now(timezone.utc).isoformat()}) + "\n")
 
-    # ── Event Emission ─────────────────────────────────────────────────
+    # ── Event Emission ─��───────────────────────────────────────────────
     def _emit(self, event_type: str, data: dict):
         event = {"type": event_type, "data": data, "timestamp": datetime.now(timezone.utc).isoformat()}
         self.event_queue.put(event)
@@ -438,3 +447,10 @@ if __name__ == "__main__":
         print("[Orchestrator] Failed to start. Launch msfrpcd first:")
         print(f"  msfrpcd -U {MSFRPCD_USER} -P {MSFRPCD_PASS} -p {MSFRPCD_PORT} -a {MSFRPCD_HOST} -S -j")
         sys.exit(1)
+
+
+
+
+
+
+

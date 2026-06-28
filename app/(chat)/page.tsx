@@ -14,8 +14,8 @@ import { usePentestgptMigration } from "../hooks/usePentestgptMigration";
 import { navigateToAuth } from "../hooks/useTauri";
 import { useTypingAnimation } from "../hooks/useTypingAnimation";
 import { upsertDraft } from "@/lib/utils/client-storage";
-import AttackPanel from "../components/AttackPanel";
-import Toolbar from "../components/Toolbar";
+
+
 
 const LOGIN_TYPING_PREFIX = "Ask HackWithAI v2 to ";
 const LOGIN_TYPING_TAILS = [
@@ -138,8 +138,7 @@ export default function Page() {
     <>
       <Authenticated>
         <AuthenticatedContent />
-        <Toolbar />
-        <AttackPanel />
+
         <ExtraUsagePurchaseToast />
         <TeamWelcomeDialog
           open={teamWelcomeDialogOpen}
@@ -158,3 +157,4 @@ export default function Page() {
     </>
   );
 }
+

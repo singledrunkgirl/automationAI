@@ -60,3 +60,10 @@ packages/desktop/node_modules/
 packages/desktop/src-tauri/target/
 
 .trigger
+
+# Environment files with secrets
+.env
+.env.local
+.env.production
+.env.*.bak*
+.env.*.backup*

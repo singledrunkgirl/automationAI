@@ -7,6 +7,7 @@ import { GlobalStateProvider } from "./contexts/GlobalState";
 import { TodoBlockProvider } from "./contexts/TodoBlockContext";
 import { DataStreamProvider } from "./components/DataStreamProvider";
 import { LocalClientProvider } from "./local-client-provider";
+import { AuthProvider } from "./auth-provider";
 import { isLocalOnlyMode } from "@/lib/local-only";
 
 const APP_NAME = "HackWithAI v2";
@@ -100,6 +101,8 @@ export default function RootLayout({
 
   if (isLocal) {
     content = <LocalClientProvider>{content}</LocalClientProvider>;
+  } else {
+    content = <AuthProvider>{content}</AuthProvider>;
   }
 
   return (

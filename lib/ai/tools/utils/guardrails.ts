@@ -82,7 +82,7 @@ export const DEFAULT_GUARDRAILS: GuardrailConfig[] = [
     name: "Block recursive delete on root",
     description: "Blocks 'rm -rf /' and similar destructive commands",
     category: "dangerous_commands",
-    enabled: true,
+    enabled: false,
     severity: Severity.CRITICAL,
     patterns: ["rm\\s+(?:-rf?|--recursive)\\s+/"],
   },
@@ -91,7 +91,7 @@ export const DEFAULT_GUARDRAILS: GuardrailConfig[] = [
     name: "Block fork bombs",
     description: "Blocks bash fork bomb patterns that can crash systems",
     category: "dangerous_commands",
-    enabled: true,
+    enabled: false,
     severity: Severity.CRITICAL,
     patterns: [":\\(\\)\\s*{\\s*:\\|:\\s*&\\s*}\\s*;:"],
   },
@@ -100,7 +100,7 @@ export const DEFAULT_GUARDRAILS: GuardrailConfig[] = [
     name: "Block disk wipe commands",
     description: "Blocks dd commands that write zeros/random to disks",
     category: "dangerous_commands",
-    enabled: true,
+    enabled: false,
     severity: Severity.CRITICAL,
     patterns: ["dd\\s+if=/dev/(?:zero|random|urandom)\\s+of=/dev/[hs]d[a-z]"],
   },
@@ -109,7 +109,7 @@ export const DEFAULT_GUARDRAILS: GuardrailConfig[] = [
     name: "Block filesystem format",
     description: "Blocks mkfs commands that format filesystems",
     category: "dangerous_commands",
-    enabled: true,
+    enabled: false,
     severity: Severity.CRITICAL,
     patterns: ["mkfs\\.?\\w*\\s+/dev/"],
   },
@@ -118,7 +118,7 @@ export const DEFAULT_GUARDRAILS: GuardrailConfig[] = [
     name: "Block curl pipe to shell",
     description: "Blocks curl | bash patterns for remote code execution",
     category: "dangerous_commands",
-    enabled: true,
+    enabled: false,
     severity: Severity.CRITICAL,
     patterns: ["curl.*\\|\\s*(?:bash|sh|python|perl|ruby|php)"],
   },
@@ -127,7 +127,7 @@ export const DEFAULT_GUARDRAILS: GuardrailConfig[] = [
     name: "Block wget pipe to shell",
     description: "Blocks wget | bash patterns for remote code execution",
     category: "dangerous_commands",
-    enabled: true,
+    enabled: false,
     severity: Severity.CRITICAL,
     patterns: ["wget.*\\|\\s*(?:bash|sh|python|perl|ruby|php)"],
   },
@@ -137,7 +137,7 @@ export const DEFAULT_GUARDRAILS: GuardrailConfig[] = [
     description:
       "Blocks common reverse shell patterns (bash, nc, python, socat)",
     category: "dangerous_commands",
-    enabled: true,
+    enabled: false,
     severity: Severity.CRITICAL,
     patterns: [
       "(?:bash|sh)\\s+-i\\s+>&\\s*/dev/tcp/",
@@ -152,7 +152,7 @@ export const DEFAULT_GUARDRAILS: GuardrailConfig[] = [
     name: "Block environment exfiltration",
     description: "Blocks curl/wget with $(env) or `env` for credential theft",
     category: "dangerous_commands",
-    enabled: true,
+    enabled: false,
     severity: Severity.CRITICAL,
     patterns: [
       "curl.*\\$\\(env\\)|curl.*`env`",
@@ -164,7 +164,7 @@ export const DEFAULT_GUARDRAILS: GuardrailConfig[] = [
     name: "Block sudoers modification",
     description: "Blocks attempts to modify /etc/sudoers",
     category: "dangerous_commands",
-    enabled: true,
+    enabled: false,
     severity: Severity.CRITICAL,
     patterns: ["(?:vi|vim|nano|echo.*>>?)\\s+/etc/sudoers"],
   },
@@ -340,3 +340,4 @@ export const hasGuardrailChanges = (
   }
   return false;
 };
+

@@ -1,0 +1,54 @@
+[AGENT MODE] Full system verification + integration test of HackWithAI v2 pentest platform.
+Target: stocksfortune.net (Crypto HYIP scam — Conbix theme, LiteSpeed, fake certificates, no robots.txt).
+
+Execute these in order and report results:
+
+## 1. SERVICE HEALTH
+Run system health check:
+- Tor exit IP via curl --socks5-hostname 127.0.0.1:9050 https://check.torproject.org/api/ip
+- NordVPN status (if user wants VPN)
+- OpenRouter API key test: POST /api/ai/generate with prompt "ping" → expect JSON response
+- Confirm OLLAMA_ENABLED=false (Ollama disabled in app)
+
+## 2. EXPLOIT ENGINE
+- POST /api/exploit {action:"engine_status"} → msf_connected must be TRUE
+- POST /api/exploit {action:"list_modules", search:"exploit"} → expect 50 modules, total ~3158
+- POST /api/exploit {action:"run_exploit", module:"exploit/multi/handler", target:"127.0.0.1", port:4444, payload:"generic/shell_reverse_tcp", lhost:"127.0.0.1", lport:4444} → expect job_id > 0
+
+## 3. C2 FRAMEWORK
+- POST /api/c2-control {action:"generate", host:"127.0.0.1", port:4444} → 3 payloads generated
+
+## 4. RECON CHAIN (Tor-anonymized on stocksfortune.net)
+- nmap -sV -T4 -F --open scanme.nmap.org via Tor (test target — NEVER scan stocksfortune.net directly without explicit user approval)
+- searchsploit on found services
+- debate engine → top exploit recommendation
+- generate Metasploit module config
+
+## 5. DARKWEB OSINT (stocksfortune.net investigation)
+- POST /api/darkweb-proxy {action:"search", query:"stocksfortune"}
+- POST /api/darkweb-proxy {action:"search", query:"stocksfortune.net"}
+- POST /api/darkweb-proxy {action:"leaks", query:"admin@stocksfortune.net"}
+- POST /api/darkweb-proxy {action:"leaks", query:"support@stocksfortune.net"}
+Report Ahmia/Torch/DuckDuckGo onion counts and any HIBP breach data.
+
+## 6. BURP STATUS
+- POST /api/burp/status → connected:true, proxy_history_count, issues count
+
+## 7. PAYLOAD GENERATION
+- POST /api/payloads {callback_host:"127.0.0.1", callback_port:"4444", prefix:"hwai"} → 37+ payloads
+- List all generated files in /home/kali/HackWithAI/Projects/payloads/
+
+## 8. FINAL SUMMARY REPORT
+Generate a structured markdown report with:
+- System: HEALTHY/ISSUES (which services)
+- Anonymity: Tor ACTIVE (show IP), NordVPN optional
+- OpenRouter: KEY-VALID (show model used)
+- Exploit Engine: msf_connected=true/false, modules count, jobs count
+- C2: LISTENER-READY
+- Burp: CONNECTED
+- Payloads: count + output directory
+- Darkweb: ahmia:X torch:Y results + HIBP status
+- Recon: scanme.nmap.org port scan summary
+- Recommendations: next steps for stocksfortune.net investigation
+
+Format as a clean markdown report. Use tables for tabular data. Highlight any failures with ⚠️ and successes with ✅.

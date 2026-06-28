@@ -48,7 +48,7 @@ class OllamaModel(BaseModel):
 
 class OpenRouterModel(BaseModel):
     """OpenRouter API model (DeepSeek, Claude, Gemini, etc.) with optional Tor SOCKS5 routing."""
-    def __init__(self, model_id: str = "deepseek/deepseek-v4-pro"):
+    def __init__(self, model_id: str = "qwen/qwen-2.5-coder-32b-instruct"):
         self.model_id = model_id
         self.api_key = os.environ.get("OPENROUTER_API_KEY", "")
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
@@ -112,12 +112,12 @@ class RuleBasedModel(BaseModel):
 def create_model(model_type: str = "openrouter", model_name: str = None) -> BaseModel:
     """Factory: returns the appropriate model instance."""
     if model_type == "openrouter":
-        key = model_name or os.environ.get("OPENROUTER_MODEL", "deepseek/deepseek-v4-pro")
+        key = model_name or os.environ.get("OPENROUTER_MODEL", "qwen/qwen-2.5-coder-32b-instruct")
         return OpenRouterModel(key)
     elif model_type == "ollama":
         return OllamaModel(model_name or "deepseek-coder:6.7b")
     elif model_type == "auto" and os.environ.get("OPENROUTER_API_KEY"):
-        key = model_name or os.environ.get("OPENROUTER_MODEL", "deepseek/deepseek-v4-pro")
+        key = model_name or os.environ.get("OPENROUTER_MODEL", "qwen/qwen-2.5-coder-32b-instruct")
         return OpenRouterModel(key)
     else:
         return RuleBasedModel()

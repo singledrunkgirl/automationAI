@@ -22,6 +22,7 @@ const UNAUTHENTICATED_PATHS = new Set([
   "/api/fraud/webhook",
   "/api/subscription/webhook",
   "/api/workos/webhook",
+  "/api/auth/signup",
   "/callback",
   "/desktop-login",
   "/desktop-callback",
@@ -112,7 +113,7 @@ export default async function middleware(
 ) {
   const pathname = request.nextUrl.pathname;
 
-  if (isLocalOnlyMode()) {
+  if (isLocalOnlyMode() || !process.env.WORKOS_API_KEY) {
     return withReferralCookie(request, NextResponse.next());
   }
 

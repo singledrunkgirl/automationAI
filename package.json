@@ -11,6 +11,8 @@
     "dev:trigger": "trigger dev",
     "dev:all": "concurrently \"next dev --turbopack\" \"npx convex dev\" \"trigger dev\"",
     "build": "next build",
+    "build:webpack": "next build --webpack",
+    "postbuild:webpack": "cp -r .next/static .next/standalone/.next/static 2>/dev/null || true; cp -r public .next/standalone/public 2>/dev/null || true",
     "start": "next start",
     "lint": "eslint app lib types __mocks__ --ext .ts,.tsx,.js,.jsx",
     "typecheck": "tsc --noEmit",
@@ -250,3 +252,4 @@
     ]
   }
 }
+

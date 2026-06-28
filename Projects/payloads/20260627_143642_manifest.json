@@ -1,0 +1,16 @@
+{
+  "timestamp": "20260627_143642",
+  "host": "127.0.0.1",
+  "port": "4444",
+  "payloads": {
+    "reverse_shell_bash": "/home/kali/HackWithAI/Projects/payloads/20260627_143642_reverse_shell_bash.sh",
+    "reverse_shell_python": "/home/kali/HackWithAI/Projects/payloads/20260627_143642_reverse_shell_python.py",
+    "reverse_shell_python_obfuscated": "/home/kali/HackWithAI/Projects/payloads/20260627_143642_reverse_shell_python_obfuscated.py",
+    "persistence_bash": "/home/kali/HackWithAI/Projects/payloads/20260627_143642_persistence_bash.sh",
+    "persistence_python": "/home/kali/HackWithAI/Projects/payloads/20260627_143642_persistence_python.py",
+    "healthcheck_agent": "/home/kali/HackWithAI/Projects/payloads/20260627_143642_healthcheck_agent.txt",
+    "binary_bash_b64": "/home/kali/HackWithAI/Projects/payloads/20260627_143642_binary_bash_b64.sh",
+    "binary_python_b64": "/home/kali/HackWithAI/Projects/payloads/20260627_143642_binary_python_b64.py",
+    "staged_loader": "/home/kali/HackWithAI/Projects/payloads/20260627_143642_staged_loader.sh"
+  }
+}

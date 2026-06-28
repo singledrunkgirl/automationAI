@@ -1,14 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// In-memory event store shared with SSE consumers
-const eventStore: Array<{ source: string; message: string; timestamp: string }> = [];
-const MAX_EVENTS = 500;
-const listeners = new Set<(event: unknown) => void>();
-
-export function addToolEventListener(fn: (event: unknown) => void) {
-  listeners.add(fn);
-  return () => listeners.delete(fn);
-}
+import { pushToolEvent, getRecentToolEvents } from "../tool-events";
 
 // POST — tools push events here
 export async function POST(req: NextRequest) {
@@ -17,17 +8,17 @@ export async function POST(req: NextRequest) {
     const { source, message, timestamp } = body;
 
     if (!source || !message) {
-      return NextResponse.json({ error: "source and message required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "source and message required" },
+        { status: 400 },
+      );
     }
 
-    const event = { source, message, timestamp: timestamp || new Date().toISOString() };
-    eventStore.push(event);
-    if (eventStore.length > MAX_EVENTS) eventStore.shift();
-
-    // Notify SSE listeners
-    for (const listener of listeners) {
-      try { listener(event); } catch {}
-    }
+    pushToolEvent({
+      source,
+      message,
+      timestamp: timestamp || new Date().toISOString(),
+    });
 
     return NextResponse.json({ success: true });
   } catch {
@@ -37,8 +28,10 @@ export async function POST(req: NextRequest) {
 
 // GET — consumer reads recent events
 export async function GET() {
+  const events = getRecentToolEvents(100);
   return NextResponse.json({
-    events: eventStore.slice(-100),
-    total: eventStore.length,
+    events,
+    total: events.length,
   });
 }
+
