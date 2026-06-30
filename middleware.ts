@@ -124,15 +124,26 @@ export default async function middleware(
     return withReferralCookie(request, NextResponse.next());
   }
 
-  // Desktop app: redirect unauthenticated users to desktop-specific error page
+  // Desktop app: redirect unauthenticated page requests to desktop-specific error
+  // page, but return JSON 401 for API requests so the React app handles them gracefully.
   if (isDesktopApp(request)) {
     const hasSession = request.cookies.has("wos-session");
-
     if (!hasSession && !isUnauthenticatedPath(pathname)) {
+      if (isBrowserRequest(request)) {
+        console.error(`[MW ${Date.now()}] REDIRECT ${pathname} → /desktop-callback?error=unauthenticated (hasSession=false)`);
+        return withReferralCookie(
+          request,
+          NextResponse.redirect(
+            new URL("/desktop-callback?error=unauthenticated", request.url),
+          ),
+        );
+      }
+      console.error(`[MW ${Date.now()}] JSON-401 ${pathname} (hasSession=false)`);
       return withReferralCookie(
         request,
-        NextResponse.redirect(
-          new URL("/desktop-callback?error=unauthenticated", request.url),
+        NextResponse.json(
+          { code: "unauthenticated", message: "Sign in required" },
+          { status: 401 },
         ),
       );
     }

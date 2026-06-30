@@ -2,7 +2,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const APP_URL = process.env.APP_URL || "https://localhost:3006";
+const APP_URL = process.env.APP_URL || "http://localhost:3006";
 const srcPath = path.join(__dirname, "../src/index.html");
 
 const original = fs.readFileSync(srcPath, "utf-8");
