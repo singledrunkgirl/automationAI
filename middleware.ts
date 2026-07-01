@@ -34,6 +34,7 @@ const UNAUTHENTICATED_PATHS = new Set([
   "/api/mcp/health",
   "/api/mcp/call",
   "/api/orchestration",
+  "/api/orchestration/metrics",
   "/api/sandbox/desktop-connect",
   "/api/playwright-proxy",
   "/manifest.json",

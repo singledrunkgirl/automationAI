@@ -9,14 +9,30 @@ import type {
   TeamDefinition,
 } from "../types";
 
-import { getAgent, getAgentsByRole } from "../agents/registry";
-import { getTeam } from "../teams/registry";
+import { getAgent, getAgentsByRole, getActiveAgents } from "../agents/registry";
+import { getTeam, TEAMS } from "../teams/registry";
+import { getPolicy, isAllowed, requiresApproval, type ExecutionPolicy, type PolicyConfig } from "../policies";
+import { routeModel, estimateCost, type RoutingContext, type RouteDecision } from "../router";
+import { executeWithRecovery, type RecoveryResult } from "../recovery";
+import { ObservabilityCollector, type AgentMetrics, type TaskMetrics, type ObservabilitySnapshot } from "../observability";
+
+const TEAM_NAMES = TEAMS.map((t) => t.id);
 
 export class OrchestrationEngine {
   private tasks = new Map<string, OrchestrationTask>();
   private activeTaskId: string | null = null;
   private startTime = Date.now();
   private taskHistory: OrchestrationTask[] = [];
+  private _policy: PolicyConfig;
+  private collector = new ObservabilityCollector();
+
+  constructor(policy: ExecutionPolicy = "balanced") {
+    this._policy = getPolicy(policy);
+  }
+
+  getPolicy(): PolicyConfig { return this._policy; }
+  setPolicy(policy: ExecutionPolicy): void { this._policy = getPolicy(policy); }
+  getCollector(): ObservabilityCollector { return this.collector; }
 
   // ── Task Lifecycle ─────────────────────────────────────
 
@@ -41,19 +57,67 @@ export class OrchestrationEngine {
       task.status = "running";
       task.steps = this.planSteps(task, team);
 
-      // Phase 2: Execute — run each step
+      // Phase 2: Execute — run each step with recovery
       for (const step of task.steps) {
+        const agent = getAgent(step.agentId);
+        if (!agent) { step.status = "failed"; step.error = "Agent not found"; continue; }
+
+        // Check approval
+        for (const toolId of agent.supportedTools.slice(0, 2)) {
+          if (requiresApproval(toolId, this._policy)) {
+            step.toolsUsed.push(`${toolId}(pending-approval)`);
+          } else if (isAllowed(toolId, this._policy)) {
+            step.toolsUsed.push(toolId);
+          }
+        }
+
+        if (step.toolsUsed.length === 0) {
+          step.status = "completed";
+          step.output = "All tools require human approval. Skipped by policy.";
+          step.completedAt = Date.now();
+          continue;
+        }
+
+        // Route model
+        const context: RoutingContext = {
+          taskComplexity: agent.role === "orchestrator" || agent.role === "coder" ? "high" : "medium",
+          estimatedTokens: 2000,
+          needsVision: agent.capabilities.includes("vision") ?? false,
+          needsToolCalling: agent.supportedTools.length > 0,
+          needsStreaming: false,
+          budget: "standard",
+          latency: "normal",
+        };
+        const route = routeModel(agent, context);
+
+        // Execute with recovery
         step.status = "running";
         step.startedAt = Date.now();
-        try {
-          step.output = await this.executeStep(step);
-          step.status = "completed";
-          step.completedAt = Date.now();
-        } catch (e) {
-          step.status = "failed";
-          step.error = e instanceof Error ? e.message : String(e);
-          step.completedAt = Date.now();
-        }
+        const primaryFn = () => this.executeStep(step);
+        const fallbackFn = () => this.executeStepWithModel(step, route.fallbackModel || "openai/gpt-4o-mini");
+        const recoveryConfig = {
+          maxRetries: route.maxRetries,
+          retryDelay: 1000,
+          timeoutMs: agent.timeout * 1000,
+          fallbackEnabled: true,
+          allowPartialCompletion: true,
+        };
+
+        const result = await executeWithRecovery(step, primaryFn, fallbackFn, route, recoveryConfig);
+        step.output = result.output || result.error;
+        step.status = result.success ? "completed" : "failed";
+        step.error = result.error;
+        step.completedAt = Date.now();
+
+        // Record metrics
+        this.collector.recordStep(step, route, {
+          duration: result.duration,
+          retries: result.retriesUsed,
+          fallbackUsed: result.fallbackUsed,
+          tokensUsed: context.estimatedTokens,
+          error: result.error,
+        });
+        this.collector.updateAgentStats(agent.id, result.success, result.duration, route.estimatedCost);
       }
 
       // Phase 3: Review — run reviewer if available
@@ -219,6 +283,16 @@ print(result)
     return new Set(outputs).size > 1;
   }
 
+  private async executeStepWithModel(step: TaskStep, fallbackModel: string): Promise<string> {
+    return JSON.stringify({
+      agent: step.agentId,
+      action: "fallback_execution",
+      model: fallbackModel,
+      input: step.input.slice(0, 200),
+      status: "fallback_attempted",
+    });
+  }
+
   private synthesize(task: OrchestrationTask): string {
     const completed = task.steps.filter((s) => s.status === "completed");
     const failed = task.steps.filter((s) => s.status === "failed");
@@ -259,9 +333,8 @@ print(result)
       uptime: Date.now() - this.startTime,
     };
   }
-}
 
-// Re-import needed
-import { getActiveAgents } from "../agents/registry";
-import { TEAMS } from "../teams/registry";
-const TEAM_NAMES = TEAMS.map((t) => t.id);
+  snapshot(task?: OrchestrationTask): ObservabilitySnapshot {
+    return this.collector.snapshot(task || this.getActiveTask());
+  }
+}
